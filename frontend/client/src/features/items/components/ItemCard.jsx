@@ -21,33 +21,66 @@ const ItemCard = ({ item, onClaimClick }) => {
   }, [item._id]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-l-4 sm:border-l-8 border-gray-200 dark:border-gray-700 shadow-md rounded-lg p-5 transition-colors duration-200">
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 m-0">{item.title}</h3>
-        <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wide ${item.type === 'lost' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
+    <div className="bg-white dark:bg-gray-900 shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-800 rounded-xl p-6 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full group">
+      <div className="flex justify-between items-start mb-4 gap-4">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex-grow leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
+          {item.title}
+        </h3>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex-shrink-0
+            ${item.type === 'lost'
+              ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50'
+              : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800/50'}`}
+        >
           {item.type}
         </span>
       </div>
-      
-      <p className="text-gray-700 dark:text-gray-300 my-3 leading-relaxed">{item.description}</p>
-      
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 gap-4">
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          <p className="mb-1"><strong className="text-gray-800 dark:text-gray-200">Location:</strong> {item.location}</p>
-          <p className="mb-0"><strong className="text-gray-800 dark:text-gray-200">Date:</strong> {new Date(item.date).toLocaleDateString()}</p>
-          
-          {claimStatus && (
-            <p className={`mt-2 font-bold ${claimStatus === 'accepted' ? 'text-green-600 dark:text-green-400' : claimStatus === 'rejected' ? 'text-red-600 dark:text-red-400' : 'text-orange-500 dark:text-orange-400'}`}>
-              Claim Status: {claimStatus.charAt(0).toUpperCase() + claimStatus.slice(1)}
-            </p>
-          )}
+
+      <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed line-clamp-3 flex-grow">
+        {item.description}
+      </p>
+
+      <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800/70">
+        <div className="grid grid-cols-2 gap-4 mb-5 text-sm">
+          <div className="flex flex-col">
+            <span className="text-gray-400 dark:text-gray-500 font-medium text-xs uppercase tracking-wider mb-1">
+              Location
+            </span>
+            <span className="text-gray-800 dark:text-gray-200 font-medium truncate" title={item.location}>
+              {item.location}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-gray-400 dark:text-gray-500 font-medium text-xs uppercase tracking-wider mb-1">
+              Date
+            </span>
+            <span className="text-gray-800 dark:text-gray-200 font-medium">
+              {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+          </div>
         </div>
-        
-        <button 
+
+        {claimStatus && (
+          <div
+            className={`mb-4 px-3 py-2 rounded-lg text-sm font-medium border
+              ${claimStatus === 'accepted'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/30'
+                : claimStatus === 'rejected'
+                ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/30'
+                : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800/30'}`}
+          >
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-current"></span>
+              Status: {claimStatus.charAt(0).toUpperCase() + claimStatus.slice(1)}
+            </span>
+          </div>
+        )}
+
+        <button
           onClick={() => onClaimClick(item)}
-          className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
+          className="w-full px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl border border-emerald-500 hover:border-emerald-600 shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
         >
-          Claim Item
+          Claim This Item
         </button>
       </div>
     </div>
