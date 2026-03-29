@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -7,6 +8,9 @@ const Login = () => {
     password: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -23,14 +27,21 @@ const Login = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
-      console.log('Login submitted:', formData);
-      // Backend connection later
+      setLoading(true);
+      try {
+        await login(formData.email, formData.password);
+        navigate('/');
+      } catch (err) {
+        setErrors({ server: err.response?.data?.message || 'Login failed' });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -102,11 +113,18 @@ const Login = () => {
             )}
           </div>
 
+          {errors.server && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium border border-red-100">
+              {errors.server}
+            </div>
+          )}
+
           <button
             type="submit"
-            className="mt-2 w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[15px] shadow hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-300"
+            disabled={loading}
+            className={`mt-2 w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[15px] shadow hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-300 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 

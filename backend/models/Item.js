@@ -24,6 +24,24 @@ const itemSchema = new mongoose.Schema({
   date: {
     type: Date,
   },
+  category: {
+    type: String,
+  },
+  brand: {
+    type: String,
+  },
+  color: {
+    type: String,
+  },
+  quantity: {
+    type: String,
+  },
+  dateAndTime: {
+    type: String,
+  },
+  lastSeenPlace: {
+    type: String,
+  },
   ownerName: {
     type: String,
   },
@@ -31,10 +49,15 @@ const itemSchema = new mongoose.Schema({
     type: String,
     default: "open"
   },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model('Item', itemSchema);

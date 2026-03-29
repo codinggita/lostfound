@@ -8,22 +8,15 @@ const {
   getItemById,
   deleteItem
 } = require('../../controllers/items/itemController');
+const { protect } = require('../../middleware/auth');
 
-// Multer Setup
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
+const { storage } = require('../../config/cloudinary');
 
 const upload = multer({ storage: storage });
 
 // Routes
 router.route('/')
-  .post(upload.single('image'), createItem)
+  .post(protect, upload.single('image'), createItem)
   .get(getItems);
 
 router.route('/:id')

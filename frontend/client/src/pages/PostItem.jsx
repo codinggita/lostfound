@@ -1,16 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Camera, X } from 'lucide-react';
+import { Camera, X, Link as LinkIcon } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const PostItem = () => {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     type: 'lost',
     location: '',
     college: '',
-    ownerName: ''
+    ownerName: '',
+    imageUrl: '',
+    category: '',
+    brand: '',
+    color: '',
+    quantity: '1',
+    dateAndTime: '',
+    lastSeenPlace: ''
   });
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -42,26 +60,27 @@ const PostItem = () => {
     setLoading(true);
     setMessage('');
 
-    const data = new FormData();
-    data.append('title', formData.title);
-    data.append('description', formData.description);
-    data.append('type', formData.type);
-    data.append('location', formData.location);
-    data.append('college', formData.college);
-    data.append('ownerName', formData.ownerName);
+    const data = image ? new FormData() : { ...formData };
+    
     if (image) {
+      Object.keys(formData).forEach(key => {
+        // Exclude imageUrl if a file is being uploaded
+        if (key !== 'imageUrl') {
+          data.append(key, formData[key]);
+        }
+      });
       data.append('image', image);
     }
 
     try {
       const res = await api.post('/api/items', data, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': image ? 'multipart/form-data' : 'application/json'
         }
       });
       if (res.data.success) {
         setMessage('Item posted successfully!');
-        setFormData({ title: '', description: '', type: 'lost', location: '', college: '', ownerName: '' });
+        setFormData({ title: '', description: '', type: 'lost', location: '', college: '', ownerName: '', imageUrl: '', category: '', brand: '', color: '', quantity: '1', dateAndTime: '', lastSeenPlace: '' });
         setImage(null);
         setPreview(null);
       }
@@ -71,6 +90,14 @@ const PostItem = () => {
       setLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center p-4 bg-emerald-50">
@@ -205,6 +232,89 @@ const PostItem = () => {
                   className="w-full pl-10 p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
                 />
               </div>
+            </div>
+            
+            {formData.type === 'lost' && (
+              <>
+                <div className="group">
+                  <label className="block mb-1.5 font-semibold text-gray-700 text-sm">Category</label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Documents">Documents</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div className="group">
+                  <label className="block mb-1.5 font-semibold text-gray-700 text-sm">Brand / Model</label>
+                  <input
+                    type="text"
+                    name="brand"
+                    placeholder="e.g., iPhone 13, HP Laptop"
+                    value={formData.brand}
+                    onChange={handleChange}
+                    className="w-full p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="group">
+                    <label className="block mb-1.5 font-semibold text-gray-700 text-sm">Color</label>
+                    <input
+                      type="text"
+                      name="color"
+                      placeholder="e.g., Black, Blue"
+                      value={formData.color}
+                      onChange={handleChange}
+                      className="w-full p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="group">
+                    <label className="block mb-1.5 font-semibold text-gray-700 text-sm">Quantity</label>
+                    <input
+                      type="number"
+                      name="quantity"
+                      min="1"
+                      placeholder="1"
+                      value={formData.quantity}
+                      onChange={handleChange}
+                      className="w-full p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="group">
+                  <label className="block mb-1.5 font-semibold text-gray-700 text-sm">Date & Time Lost</label>
+                  <input
+                    type="datetime-local"
+                    name="dateAndTime"
+                    value={formData.dateAndTime}
+                    onChange={handleChange}
+                    className="w-full p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
+                  />
+                </div>
+
+                <div className="group">
+                  <label className="block mb-1.5 font-semibold text-gray-700 text-sm">Last Seen Place</label>
+                  <input
+                    type="text"
+                    name="lastSeenPlace"
+                    placeholder="e.g., Near cafeteria entrance"
+                    value={formData.lastSeenPlace}
+                    onChange={handleChange}
+                    className="w-full p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
+                  />
+                </div>
+              </>
+            )}
             
             <div className="group">
               <label className="block mb-1.5 font-semibold text-gray-700 text-sm">College</label>
@@ -245,6 +355,28 @@ const PostItem = () => {
                 />
               </div>
             </div>
+
+            <div className="group">
+              <label className="block mb-1.5 font-semibold text-gray-700 text-sm">Image URL (Optional)</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <LinkIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  name="imageUrl"
+                  placeholder="https://example.com/image.jpg"
+                  value={formData.imageUrl}
+                  onChange={handleChange}
+                  className="w-full pl-10 p-3.5 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 my-2">
+              <div className="flex-1 h-px bg-gray-200"></div>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">OR</span>
+              <div className="flex-1 h-px bg-gray-200"></div>
             </div>
 
             <div className="group">
