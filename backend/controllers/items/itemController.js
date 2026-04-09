@@ -4,9 +4,16 @@ const Item = require('../../models/Item');
 exports.createItem = async (req, res) => {
   try {
     const itemData = { ...req.body };
+    
+    // Associate item with user
+    itemData.user = req.user.id;
+
     if (req.file) {
-      itemData.image = req.file.filename;
+      itemData.image = req.file.path;
+    } else if (req.body.imageUrl) {
+      itemData.image = req.body.imageUrl;
     }
+
     const item = await Item.create(itemData);
     res.status(201).json({ success: true, data: item });
   } catch (error) {

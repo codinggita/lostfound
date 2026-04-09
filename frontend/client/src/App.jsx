@@ -6,10 +6,12 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Items from './pages/Items';
 import PostItem from './pages/PostItem';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <Router>
+    <AuthProvider>
+      <Router>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -21,6 +23,7 @@ function App() {
         </Routes>
       </Layout>
     </Router>
+    </AuthProvider>
   );
 }
 

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import ItemCard from '../features/items/components/ItemCard';
+import { useAuth } from '../context/AuthContext';
 
 const Items = () => {
+  const { isAuthenticated } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -52,7 +54,7 @@ const Items = () => {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/items', {
+      const res = await api.get('/api/items', {
         params: {
           search: debouncedSearch,
           type,
@@ -81,9 +83,7 @@ const Items = () => {
 
   // Handle claiming sequence
   const handleClaimClick = (item) => {
-    // Basic Auth verification - Check for token or user object in localStorage
-    const token = localStorage.getItem('token') || localStorage.getItem('user');
-    if (!token) {
+    if (!isAuthenticated) {
       navigate('/login');
       return;
     }
@@ -101,7 +101,7 @@ const Items = () => {
     setIsSubmitting(true);
     
     try {
-      const res = await axios.post('http://localhost:5000/api/claims', {
+      const res = await api.post('/api/claims', {
         itemId: selectedItem._id,
         claimantName: claimName,
         verificationAnswer: claimAnswer

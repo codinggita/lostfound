@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    avatar: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const { signup } = useAuth();
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -26,14 +31,21 @@ const Signup = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
-      console.log('Signup submitted:', formData);
-      // Backend connection later
+      setLoading(true);
+      try {
+        await signup(formData);
+        navigate('/');
+      } catch (err) {
+        setErrors({ server: err.response?.data?.message || 'Registration failed' });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -106,6 +118,21 @@ const Signup = () => {
           </div>
 
           <div className="group">
+            <label htmlFor="avatar" className="block mb-1.5 font-semibold text-gray-700 text-sm">
+              Profile Picture URL (Optional)
+            </label>
+            <input
+              type="text"
+              id="avatar"
+              name="avatar"
+              placeholder="https://example.com/photo.jpg"
+              value={formData.avatar}
+              onChange={handleChange}
+              className="w-full p-3.5 rounded-xl border border-gray-300 hover:border-emerald-400 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm placeholder-gray-400"
+            />
+          </div>
+
+          <div className="group">
             <label htmlFor="password" className="block mb-1.5 font-semibold text-gray-700 text-sm">
               Password
             </label>
@@ -134,11 +161,18 @@ const Signup = () => {
             )}
           </div>
 
+          {errors.server && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium border border-red-100">
+              {errors.server}
+            </div>
+          )}
+
           <button
             type="submit"
-            className="mt-3 w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[15px] shadow hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-300"
+            disabled={loading}
+            className={`mt-3 w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[15px] shadow hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-300 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
